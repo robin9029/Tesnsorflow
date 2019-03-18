@@ -45,6 +45,12 @@ cols =['housingMedianAge', 'totalRooms', 'totalBedrooms', 'population',
 X[cols] = X[cols].apply(lambda x: (x-x.min()/(x.max()-x.min())))
 
 #data_normalize_2 used on X_train,X_test data  Continiuos Variable (6 features )
+from sklearn.preprocessing import MinMaxScaler
+scaler =MinMaxScaler()
+scaler.fit(X_train)
+
+X_train = pd.DataFrame(data= scaler.transform(X_train) ,columns=X_train.columns,index=X_train.index)
+X_test  = pd.DataFrame(data=scaler.transform(X_test),columns=X_test.columns, index=X_test.index)
 
 
 # Linear regression 
