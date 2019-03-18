@@ -39,21 +39,21 @@ X= x_data.drop( 'medianHouseValue', axis=1)
 y= x_data['medianHouseValue']
 x_data.head()
 
-#split
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.30, random_state=42)
-
-#data normalize 1
+#data_normalize_1  used on complete data set  Continiuos Variable (6 features )
 cols =['housingMedianAge', 'totalRooms', 'totalBedrooms', 'population',
        'households', 'medianIncome']
 X[cols] = X[cols].apply(lambda x: (x-x.min()/(x.max()-x.min())))
 
-#data normalize 2
+#data_normalize_2 used on X_train,X_test data  Continiuos Variable (6 features )
 
 
 # Linear regression 
-
 x_data.columns
+
+#split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.30, random_state=42)
+
 
 #add column in tf for estimator input
 
@@ -101,7 +101,10 @@ from  sklearn.metrics import mean_squared_error
 mean_squared_error(y_test,final_pred)**0.5
 #165602.1094187008
 
+#################################################################################################
 #lets use Dense Neural network 
+#################################################################################################
+
 dnn_model = tf.estimator.DNNRegressor(hidden_units=[6,6,6],feature_columns=feature_col)
 #[6,6,6] six features with 3 deep layer
 
@@ -127,8 +130,15 @@ for i in predictions:
 from sklearn.metrics import mean_squared_error
 mean_squared_error(y_test,pred_fn )**0.5
 
-#DNN Linear regression      final_pred2 #106275.85012643556
-#Linear Regression          final_pred  #165602.1094187008
+#RMSE 
+#DNN Linear regression   when used data_normalize_1    final_pred2  =106275.85012643556
+                         when used data_normalize_2    final_pred2  =98199.340036776935
+#Linear Regression       when used data_normalize_1    final_pred   =165602.1094187008
+                         when used data_normalize_2    final_pred   =237315.94670134757  
+
+#use only one of the data_normalize
+                         
+                         
     
 
 
