@@ -27,7 +27,7 @@ import tensorflow as tf
 x_data = pd.read_csv("C:\\Users\\xxxx\\Tensorflow-Bootcamp-master\\02-TensorFlow-Basics\\cal_housing_clean.csv")
 
 X= x_data.drop( 'medianHouseValue', axis=1)
-y= x_data['medianHouseValue']
+y= x_data['medianHouseValue']                               #target Variable 
 x_data.head()
 
 #train_split
@@ -108,7 +108,7 @@ mean_squared_error(y_test,final_pred)**0.5
 #165602.1094187008
 
 #################################################################################################
-#lets use Dense Neural network 
+#lets use Deep Neural network 
 #################################################################################################
 
 dnn_model = tf.estimator.DNNRegressor(hidden_units=[6,6,6],feature_columns=feature_col)
