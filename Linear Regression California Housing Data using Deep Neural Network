@@ -1,0 +1,134 @@
+'''Regression 
+California Housing Data
+This data set contains information about all the block groups in California from the 1990 Census. In this sample a block group on average includes 1425.5 individuals living in a geographically compact area. 
+The task is to aproximate the median house value of each block from the values of the rest of the variables. 
+It has been obtained from the LIACC repository. The original page where the data set can be found is: http://www.liaad.up.pt/~ltorgo/Regression/DataSets.html.
+
+The Features:
+housingMedianAge: continuous. 
+totalRooms: continuous. 
+totalBedrooms: continuous. 
+population: continuous. 
+households: continuous. 
+medianIncome: continuous. 
+medianHouseValue: continuous. 
+
+The Data
+
+Import the cal_housing.csv file with pandas. Separate it into a training (70%) and testing set(30%).'''
+
+import  pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import tensorflow as tf
+
+#data
+x_data = pd.read_csv("C:\\Users\\xxxx\\Tensorflow-Bootcamp-master\\02-TensorFlow-Basics\\cal_housing_clean.csv")
+
+X= x_data.drop( 'medianHouseValue', axis=1)
+y= x_data['medianHouseValue']
+x_data.head()
+
+#train_split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.30, random_state=42)
+
+#Prepare_data 
+X= x_data.drop( 'medianHouseValue', axis=1)
+y= x_data['medianHouseValue']
+x_data.head()
+
+#split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split( X, y, test_size=0.30, random_state=42)
+
+#data normalize 1
+cols =['housingMedianAge', 'totalRooms', 'totalBedrooms', 'population',
+       'households', 'medianIncome']
+X[cols] = X[cols].apply(lambda x: (x-x.min()/(x.max()-x.min())))
+
+#data normalize 2
+
+
+# Linear regression 
+
+x_data.columns
+
+#add column in tf for estimator input
+
+housingMedianAge = tf.feature_column.numeric_column('housingMedianAge')
+totalRooms = tf.feature_column.numeric_column('totalRooms')
+totalBedrooms =tf.feature_column.numeric_column('totalBedrooms')
+population = tf.feature_column.numeric_column('population')
+households =tf.feature_column.numeric_column('households')
+medianIncome =  tf.feature_column.numeric_column('medianIncome')
+
+'''LinearRegressor
+1) train input function
+2) evaluate 
+3) predict'''
+
+#prepare Model
+feature_col =[housingMedianAge, totalRooms, totalBedrooms, population,
+       households, medianIncome]
+model= tf.estimator.LinearRegressor(feature_columns=feature_col)
+
+#input fun
+input_func = tf.estimator.inputs.pandas_input_fn(x=X_train,y=y_train,batch_size=10,shuffle=True,num_epochs=1000)
+
+#train
+model.train(input_fn=input_func,steps=25000)
+
+#evaluate  fun
+model.evaluate(input_fn=input_func,steps=1000)
+eval_fun =tf.estimator.inputs.pandas_input_fn(x=X_test,y=y_test,batch_size=10,shuffle=False)
+eval = model.evaluate(input_fn=eval_fun, steps=1000)
+
+#predict function
+predict_inp_fun = tf.estimator.inputs.pandas_input_fn(X_test,num_epochs=1,batch_size=10,shuffle=False)
+predict = model.predict(predict_inp_fun)
+
+
+#now see the the Rmse
+predictions =list(predict)
+final_pred= []
+
+for i in predictions:
+    final_pred.append(i['predictions'])
+
+from  sklearn.metrics import mean_squared_error
+mean_squared_error(y_test,final_pred)**0.5
+#165602.1094187008
+
+#lets use Dense Neural network 
+dnn_model = tf.estimator.DNNRegressor(hidden_units=[6,6,6],feature_columns=feature_col)
+#[6,6,6] six features with 3 deep layer
+
+
+dnn_input_fun = tf.estimator.inputs.pandas_input_fn(x=X_train,y=y_train,
+                                                    num_epochs=1000,
+                                                    batch_size=10,
+                                           shuffle=True)
+dnn_model.train(input_fn=dnn_input_fun,steps=25000)
+
+dnn_predict = tf.estimator.inputs.pandas_input_fn(x=X_test,num_epochs=1,batch_size=10,shuffle=False,)
+predict_gen =dnn_model.predict(input_fn=dnn_predict)
+predictions =list(predict_gen)
+
+predict_gen =dnn_model.predict(input_fn=dnn_predict)
+predictions =list(predict_gen)
+
+final_pred2= []
+
+for i in predictions:
+    final_pred2.append(i['predictions'])
+
+from sklearn.metrics import mean_squared_error
+mean_squared_error(y_test,pred_fn )**0.5
+
+#DNN Linear regression      final_pred2 #106275.85012643556
+#Linear Regression          final_pred  #165602.1094187008
+    
+
+
