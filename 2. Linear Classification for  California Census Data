@@ -1,7 +1,7 @@
 #please go through the below link for detailed description of census data
 #https://archive.ics.uci.edu/ml/datasets/census+income
 '''
-we'll be trying to use various features of an individual to predict what class of income they belogn in (>50k or <=50k). '''
+Predict what class of income they belogn in (>50k or <=50k). '''
 
 categorrical Variable:
 gender,workclass, education,marital_status, occupation, relationship,race,native_country
