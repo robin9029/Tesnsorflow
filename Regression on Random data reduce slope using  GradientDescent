@@ -1,0 +1,62 @@
+#Learning purpose lets do regresson without using  Tensorflow Estimator  on Random data
+#minimize  y= mx+b  using GradientDescent,choose random m=0.5 & b=1 
+
+#import Library
+import numpy as np
+import tensorflow as tf
+import pandas as pd
+
+#create Train data from range 0-10  1000000 data
+x_data = np.linspace(0.0,10.0,1000000)
+#batch data to be taken at a time 
+batch_size = 8
+
+#slope choose =0.5, intercept choose =1.0
+
+m = tf.Variable(0.5)
+b = tf.Variable(1.0)
+
+xph = tf.placeholder(tf.float32,[batch_size])
+yph = tf.placeholder(tf.float32,[batch_size])
+
+#Actual model
+y_model = m*xph + b
+
+#error = difference between predicted value & actual value
+error = tf.reduce_sum(tf.square(yph-y_model))
+
+#learning rate =0.001
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001)
+train = optimizer.minimize(error)
+
+#initialize global variable 
+init = tf.global_variables_initializer()
+
+#run the Session 
+with tf.Session() as sess:
+    
+    #run initialization 
+    sess.run(init)
+    #iteration 
+    batches = 1000
+    
+    for i in range(batches):
+        #prepare feed_dict for running session 
+        rand_ind = np.random.randint(len(x_data),size=batch_size)
+        
+        feed = {xph:x_data[rand_ind],yph:y_true[rand_ind]}
+        
+        sess.run(train,feed_dict=feed)
+        
+    model_m,model_b = sess.run([m,b])
+    
+print("Slope     : ",model_m)
+print("intercept : ",model_b)
+
+'''
+Slope     :  0.453321
+intercept :  4.88321
+'''
+# predicted slope is  0.453321 while assumed slope  is 0.5
+# predicted intercept is 4.88321 while assumed intercept is 1.0
+#slopee got reduced
