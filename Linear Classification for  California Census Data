@@ -1,0 +1,107 @@
+#https://archive.ics.uci.edu/ml/datasets/census+income
+'''
+we'll be trying to use various features of an individual to predict what class of income they belogn in (>50k or <=50k). '''
+
+categorrical Variable:
+gender,workclass, education,marital_status, occupation, relationship,race,native_country
+
+continious Variable
+age,education_num,capital_gain, capital_loss,hours_per_week
+'''
+#import library
+
+import pandas as pd
+import tensorflow as tf
+
+#data input 
+census= pd.read_csv("census_data.csv")
+census.head()
+
+#prepare for Target Variable income_bracket - as INCOME <=50K = 0 else 1 
+
+census['income_bracket'].unique()
+#Array([' <=50K', ' >50K'], dtype=object)
+
+def unique_fun(label):
+    if (label ==' <=50K'):
+        return 0
+    else:
+        return 1
+census['income_bracket']= census['income_bracket'].apply(unique_fun)
+
+#prepare for Input & out put data 
+X=census.drop('income_bracket', axis=1)
+y= census['income_bracket']
+
+#data split for testing 
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test =train_test_split(X,y, test_size =0.30, random_state=101)
+
+
+# create feature column to be used for train
+#categorical data
+gender = tf.feature_column.categorical_column_with_vocabulary_list("gender", ['Male','Female'])
+workclass = tf.feature_column.categorical_column_with_hash_bucket("workclass",hash_bucket_size=1000)
+education  =tf.feature_column.categorical_column_with_hash_bucket("education", hash_bucket_size=1000)
+marital_status = tf .feature_column.categorical_column_with_hash_bucket("marital_status",hash_bucket_size=1000)
+occupation = tf .feature_column.categorical_column_with_hash_bucket("occupation",hash_bucket_size=1000)
+relationship = tf .feature_column.categorical_column_with_hash_bucket("relationship",hash_bucket_size=1000)
+race = tf .feature_column.categorical_column_with_hash_bucket("race",hash_bucket_size=1000)
+native_country = tf .feature_column.categorical_column_with_hash_bucket("native_country",hash_bucket_size=1000)
+
+#continious data
+age = tf.feature_column.numeric_column("age")
+education_num = tf.feature_column.numeric_column("education_num")
+capital_gain = tf.feature_column.numeric_column("capital_gain")
+capital_loss = tf.feature_column.numeric_column("capital_loss")
+hours_per_week= tf.feature_column.numeric_column("hours_per_week")
+
+#feature_column
+feature_col =[age, workclass,education,education_num, marital_status,
+       occupation, relationship, race, gender, capital_gain,
+       capital_loss, hours_per_week, native_country]
+ 
+#create model
+model = tf.estimator.LinearClassifier(feature_columns= feature_col)
+#prepare input_function to train
+input_func = tf.estimator.inputs.pandas_input_fn(x=X_train, y= y_train, num_epochs=100,shuffle=True,batch_size=10 )
+
+#train model
+model.train(input_fn=input_func, steps=5000)
+
+#create Predict function to predict
+pred_func = tf.estimator.inputs.pandas_input_fn(x=X_test,num_epochs=1, batch_size=10,shuffle=False)
+#predict
+predictions = list(model.predict(input_fn=pred_func))
+predictions[0]
+
+'''
+{'class_ids': array([0], dtype=int64),
+ 'classes': array([b'0'], dtype=object),
+ 'logistic': array([ 0.13308544], dtype=float32),
+ 'logits': array([-1.87394905], dtype=float32),
+ 'probabilities': array([ 0.86691457,  0.13308544], dtype=float32)}
+'''
+final_pred= []
+
+for i in predictions:
+    final_pred.append(i['class_ids'][0])
+final_pred[:10]
+#predicted [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+
+#f1 - score  https://en.wikipedia.org/wiki/F1_score
+
+from sklearn.metrics import classification_report
+print(classification_report(y_test,final_pred))
+
+'''
+             precision    recall  f1-score   support
+
+          0       0.89      0.90      0.90      7436
+          1       0.68      0.65      0.66      2333
+
+avg / total       0.84      0.84      0.84      9769
+'''
+       
+
+
